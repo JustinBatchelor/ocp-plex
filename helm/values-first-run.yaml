@@ -1,0 +1,5 @@
+pms:
+  claimSecret:
+    name: plex-claim
+    key: claim-token
+

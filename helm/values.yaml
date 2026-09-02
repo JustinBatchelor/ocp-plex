@@ -1,0 +1,79 @@
+fullnameOverride: plex
+
+hostNetwork: false
+
+ingress:
+  enabled: false
+
+httpRoute:
+  enabled: false
+
+serviceAccount:
+  create: true
+  name: plex
+  automountServiceAccountToken: false
+
+statefulSet:
+  annotations:
+    openshift.io/required-scc: anyuid
+  podAnnotations: {}
+
+service:
+  type: ClusterIP
+  port: 32400
+
+pms:
+  storageClassName: truenas-nfs
+  configStorage: 50Gi
+  claimSecret:
+    name: ""
+    key: ""
+  gpu:
+    nvidia:
+      enabled: false
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+      ephemeral-storage: 10Gi
+    limits:
+      cpu: "4"
+      memory: 8Gi
+      ephemeral-storage: 50Gi
+  readinessProbe:
+    httpGet:
+      path: /identity
+      port: 32400
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 18
+  livenessProbe:
+    httpGet:
+      path: /identity
+      port: 32400
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 6
+
+extraEnv:
+  ADVERTISE_IP: https://plex.apps.sno.batchelor.live/
+  HOSTNAME: plex-sno
+  TZ: America/New_York
+  PLEX_UID: "972"
+  PLEX_GID: "3000"
+
+extraVolumes:
+  - name: plex-media
+    persistentVolumeClaim:
+      claimName: plex-media
+
+extraVolumeMounts:
+  - name: plex-media
+    mountPath: /data
+    readOnly: true
+
+rclone:
+  enabled: false
+

@@ -1,0 +1,26 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: plex
+  namespace: plex
+  labels:
+    app.kubernetes.io/name: plex
+  annotations:
+    haproxy.router.openshift.io/timeout: 1h
+    haproxy.router.openshift.io/hsts_header: max-age=31536000;includeSubDomains
+    haproxy.router.openshift.io/set-forwarded-headers: replace
+    # Add after confirming the VPN source CIDR. Values are space-separated.
+    # haproxy.router.openshift.io/ip_allowlist: 10.45.45.0/24 100.64.0.0/10
+spec:
+  host: plex.apps.sno.batchelor.live
+  port:
+    targetPort: pms
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  to:
+    kind: Service
+    name: plex
+    weight: 100
+  wildcardPolicy: None
+
