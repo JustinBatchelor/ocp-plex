@@ -16,8 +16,9 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: openshift-ingress
+              # Includes OpenShift's host-network ingress identity, required
+              # when the router and Plex run on different nodes.
+              policy-group.network.openshift.io/ingress: ""
       ports:
         - protocol: TCP
           port: 32400
-

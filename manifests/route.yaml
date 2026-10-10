@@ -9,10 +9,27 @@ metadata:
     haproxy.router.openshift.io/timeout: 1h
     haproxy.router.openshift.io/hsts_header: max-age=31536000;includeSubDomains
     haproxy.router.openshift.io/set-forwarded-headers: replace
-    # Add after confirming the VPN source CIDR. Values are space-separated.
-    # haproxy.router.openshift.io/ip_allowlist: 10.45.45.0/24 100.64.0.0/10
+    # Required security boundary for Plex's router-scoped offline auth exception.
+    # Do not remove while allowedNetworks trusts the router's internal address.
+    haproxy.router.openshift.io/ip_allowlist: 10.45.45.0/24
 spec:
   host: plex.apps.sno.batchelor.live
+  httpHeaders:
+    actions:
+      request:
+        # Plex rejects its no-auth exception for unrecognized custom-domain
+        # headers. Omit them only on the backend hop. With no Host, Plex emits
+        # relative redirects, preserving the public HTTPS URL in the browser.
+        # The source-IP allowlist above is mandatory for this offline mode.
+        - name: Host
+          action:
+            type: Delete
+        - name: Origin
+          action:
+            type: Delete
+        - name: Referer
+          action:
+            type: Delete
   port:
     targetPort: pms
   tls:
@@ -23,4 +40,3 @@ spec:
     name: plex
     weight: 100
   wildcardPolicy: None
-

@@ -4,9 +4,6 @@ set -eu
 
 "$repo_root/scripts/preflight.sh"
 
-helm repo add plex "$PLEX_HELM_REPOSITORY" --force-update >/dev/null
-helm repo update plex >/dev/null
-
 oc apply -f "$repo_root/manifests/namespace.yaml"
 oc apply -f "$repo_root/manifests/media-storage.yaml"
 oc apply -f "$repo_root/manifests/scc-rolebinding.yaml"

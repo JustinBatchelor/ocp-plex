@@ -3,8 +3,6 @@ set -eu
 . "$(dirname -- "$0")/common.sh"
 
 mkdir -p "$repo_root/rendered"
-helm repo add plex "$PLEX_HELM_REPOSITORY" --force-update >/dev/null
-helm repo update plex >/dev/null
 
 if [ "${FIRST_RUN:-false}" = true ]; then
   helm template "$PLEX_RELEASE" "$PLEX_CHART" \

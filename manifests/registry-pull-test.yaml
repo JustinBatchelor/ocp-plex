@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: plex-registry-pull-test
+  namespace: plex
+spec:
+  serviceAccountName: plex
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  nodeSelector:
+    kubernetes.io/hostname: worker-0
+  containers:
+    - name: verify
+      image: image-registry.openshift-image-registry.svc:5000/plex/plex:1.43.3.10896-cb3ebc72d@sha256:d80222e9149dd570497d57c25bb2f5e03b78faaf111fe8f931e4946b282ed7a5
+      imagePullPolicy: Always
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          test "$(uname -m)" = x86_64
+          test -x '/usr/lib/plexmediaserver/Plex Media Server'
+          printf 'Internal registry pull succeeded on Linux AMD64.\n'
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi

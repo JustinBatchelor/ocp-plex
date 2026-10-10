@@ -1,0 +1,26 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: plex
+  namespace: plex
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: plex-image-publisher
+  namespace: plex
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: plex-image-publisher
+  namespace: plex
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:image-builder
+subjects:
+  - kind: ServiceAccount
+    name: plex-image-publisher
+    namespace: plex
