@@ -17,6 +17,24 @@ trusted HTTPS Web UI, HTTP redirect, and two media byte ranges were verified
 while Docker Hub DNS remained unavailable to Plex. Actual offline client
 playback and seeking still require client confirmation.
 
+### Recovery verification, 2026-10-25
+
+`worker-0` stopped reporting at 08:06 Eastern and was found powered off.
+Plex, RetroArch, Garage's database, and the worker-pinned registry were affected.
+After the owner powered the worker back on, the applications recovered without
+force-deleting pods or replacing persistent storage. Plex's saved claim,
+Movies/TV libraries, trusted HTTPS, and two 1 MiB media byte ranges passed.
+The LAN checks also passed without credentials through the existing allowlist.
+These checks do not establish full client playback or sustained transcoding.
+
+The registry's hostname selector was removed in the live operator configuration
+and the checked-in merge patch. Its rollout completed, and an authenticated
+`Always` image pull passed on `sno`. The registry currently runs one replica;
+this removes the scheduling restriction, but does not provide uninterrupted
+availability or establish a tested node-failure recovery time. Both nodes were
+Ready and all 34 cluster operators were available, not degraded, and not
+progressing after recovery.
+
 ## Architecture
 
 - Public URL: `https://plex.apps.sno.batchelor.live`
@@ -49,8 +67,12 @@ its image registry.
 
 The internal registry uses its own 100 GiB RWX `truenas-nfs` PVC in
 `openshift-image-registry`, with one replica and a `Recreate` rollout. It is
-pinned to `worker-0`, which already has the registry's OpenShift 4.22.4 image
-cached. Registry availability therefore depends on that worker and TrueNAS.
+eligible to run on either cluster node. The former `worker-0` hostname selector
+was removed after a powered-off worker stranded the registry on 2026-10-25;
+the OpenShift 4.22.18 registry image was confirmed cached on `sno` as well.
+The configuration patch uses `nodeSelector: null` to remove that old selector
+when applied as a merge patch. Registry availability still depends on TrueNAS,
+one running registry pod, and a cached or pullable image on the selected node.
 This change does not make all OpenShift operators or upgrades disconnected.
 
 To configure the registry from the checked-in manifests:

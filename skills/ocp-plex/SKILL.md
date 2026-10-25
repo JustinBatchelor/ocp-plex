@@ -31,6 +31,11 @@ at `/data`; `/config` uses the `truenas-nfs` PVC and `/transcode` uses ephemeral
 storage. Do not replace this with hostpath on the SNO operating-system partition.
 Only the Plex service account receives `anyuid`.
 
+The registry uses retained shared NFS storage and may run on either cluster
+node. Its configuration is a merge patch: `nodeSelector: null` clears the former
+worker-only pin. Preserve that removal when changing registry setup; verify
+the registry image is cached or pullable on eligible nodes for offline recovery.
+
 The checked-in offline mode trusts the router's observed source address inside
 Plex. Its Route allowlist is therefore an authentication boundary: admitted LAN
 clients have password-free access, including server settings. Keep that allowlist
