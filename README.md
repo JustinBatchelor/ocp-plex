@@ -185,16 +185,17 @@ In Plex **Settings > Server > Network**:
 
 ## Offline LAN access and VPN boundary
 
-The Plex Route allows only sources in `10.45.45.0/24`, enforced by
+The Plex Route allows only home LAN sources in `10.45.45.0/24` and VPN sources
+in `192.168.40.0/24` (OpenVPN) and `10.60.60.0/24` (WireGuard), enforced by
 `haproxy.router.openshift.io/ip_allowlist`. Forwarded headers are replaced,
 and the allowlist checks the actual connection source, not a supplied header.
-Non-LAN requests are dropped, which can appear as an empty HTTP response.
+Requests outside these ranges are dropped, which can appear as an empty HTTP response.
 
 Plex sees routed connections from `10.128.0.2`, the `sno` router's internal
 OVN management address. Its persistent `allowedNetworks` setting trusts only
 `10.128.0.2/255.255.255.255` without authentication. This was explicitly enabled
 for offline LAN use. Requests from LAN clients through this Route therefore
-do not require Plex sign-in. The server remains claimed.
+do not require Plex sign-in. The same applies to admitted VPN clients. The server remains claimed.
 
 Credential-free library listing and two movie byte ranges passed from the Mac
 with browser-style Origin/Referer headers. `/web/` stays on HTTPS and redirects
@@ -206,8 +207,8 @@ otherwise classifies the custom hostname as non-local and rejects anonymous
 requests even from an allowed IP. With `Host` omitted, Plex emits relative Web
 UI redirects, preserving the browser's public HTTPS URL. The client URL and
 trusted edge TLS certificate remain `https://plex.apps.sno.batchelor.live`.
-This offline mode relies on the LAN source-IP boundary rather than Plex's
-custom-domain/origin checks. Use it only on a trusted LAN.
+This offline mode relies on the LAN/VPN source-IP boundary rather than Plex's
+custom-domain/origin checks. Use it only with trusted LAN and VPN clients.
 
 **Keep the Route allowlist in place while this exception is enabled.**
 All clients admitted by the Route share password-free access through the
@@ -229,15 +230,32 @@ To restore required Plex authentication, run the same configuration script with
 `disable` and restart Plex. It clears only this known exception and retains
 the Route allowlist. It refuses to overwrite an unexpected existing exception.
 
-VPN clients are admitted only if their connection is translated into the LAN
-range. Other VPN CIDRs are currently blocked. Adding a CIDR also grants its
-clients password-free Plex access through this Route, so treat that as a
-deliberate access-policy change.
+VPN clients in `192.168.40.0/24` are explicitly admitted, as authorized on
+2026-10-30. This grants the VPN subnet the same password-free Plex access as
+the home LAN, including owner-level access to server settings. Other source
+CIDRs remain blocked. Adding another CIDR is a deliberate access-policy change.
+
+The VPN server's pushed configuration confirmed a `/24` subnet. After adding
+it on 2026-10-30, the HTTPS Web UI, Movies/TV library listing, and two 1 MiB
+movie byte ranges passed from VPN client `192.168.40.2` without credentials.
+Full browser playback and seeking still require client confirmation.
 
 During an internet outage, a browser that sends an old account token may still
 stall while Plex tries to validate that token online. Use a fresh private
 window at `https://plex.apps.sno.batchelor.live/web/index.html` without signing
 in to Plex's online service to use the credential-free local path.
+
+### WireGuard access
+
+The fresh WireGuard trial admits `10.60.60.0/24` alongside LAN and OpenVPN.
+It grants the same password-free Plex access, including server settings.
+The Route remains the source-address boundary; Plex still trusts only the
+existing router address, and client source addresses must be preserved to ingress.
+The offline-access setup script requires all three approved CIDRs.
+WireGuard clients use the existing HTTPS hostname and DNS at `10.45.45.1`.
+
+Deployment validation is recorded separately; admitting this subnet does not
+by itself establish actual playback, seeking, or measured VPN throughput.
 
 ## Optional backups and upgrades
 

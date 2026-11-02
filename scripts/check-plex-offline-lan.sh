@@ -1,5 +1,5 @@
 #!/bin/sh
-# Run on a LAN client. Deliberately sends no Plex credential or browser cookie.
+# Run on an admitted LAN or VPN client. Sends no Plex credential or browser cookie.
 set -eu
 base=https://plex.apps.sno.batchelor.live
 plex_get() {
@@ -18,4 +18,4 @@ for range in 0-1048575 10485760-11534335; do
   [ "$result" = '206 1048576' ] || exit 1
 done
 plex_get -L -o /dev/null -w 'Web UI final URL: %{url_effective}\n' "$base/web/"
-printf 'Offline LAN library and media checks passed without credentials.\n'
+printf 'Offline LAN/VPN library and media checks passed without credentials.\n'
