@@ -11,7 +11,7 @@ metadata:
     haproxy.router.openshift.io/set-forwarded-headers: replace
     # Required security boundary for Plex's router-scoped offline auth exception.
     # Do not remove while allowedNetworks trusts the router's internal address.
-    haproxy.router.openshift.io/ip_allowlist: 10.45.45.0/24 192.168.40.0/24 10.60.60.0/24
+    haproxy.router.openshift.io/ip_allowlist: 10.45.45.0/24 10.60.60.0/24
 spec:
   host: plex.apps.sno.batchelor.live
   httpHeaders:

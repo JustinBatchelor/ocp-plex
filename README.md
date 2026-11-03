@@ -185,8 +185,8 @@ In Plex **Settings > Server > Network**:
 
 ## Offline LAN access and VPN boundary
 
-The Plex Route allows only home LAN sources in `10.45.45.0/24` and VPN sources
-in `192.168.40.0/24` (OpenVPN) and `10.60.60.0/24` (WireGuard), enforced by
+The Plex Route allows only home LAN sources in `10.45.45.0/24` and WireGuard
+VPN sources in `10.60.60.0/24`, enforced by
 `haproxy.router.openshift.io/ip_allowlist`. Forwarded headers are replaced,
 and the allowlist checks the actual connection source, not a supplied header.
 Requests outside these ranges are dropped, which can appear as an empty HTTP response.
@@ -230,15 +230,10 @@ To restore required Plex authentication, run the same configuration script with
 `disable` and restart Plex. It clears only this known exception and retains
 the Route allowlist. It refuses to overwrite an unexpected existing exception.
 
-VPN clients in `192.168.40.0/24` are explicitly admitted, as authorized on
-2026-10-30. This grants the VPN subnet the same password-free Plex access as
-the home LAN, including owner-level access to server settings. Other source
-CIDRs remain blocked. Adding another CIDR is a deliberate access-policy change.
-
-The VPN server's pushed configuration confirmed a `/24` subnet. After adding
-it on 2026-10-30, the HTTPS Web UI, Movies/TV library listing, and two 1 MiB
-movie byte ranges passed from VPN client `192.168.40.2` without credentials.
-Full browser playback and seeking still require client confirmation.
+OpenVPN was retired on 2026-11-02 after successful WireGuard validation.
+Its former `192.168.40.0/24` subnet is no longer admitted by this Route.
+Other source CIDRs remain blocked. Adding another CIDR is a deliberate
+access-policy change.
 
 During an internet outage, a browser that sends an old account token may still
 stall while Plex tries to validate that token online. Use a fresh private
@@ -247,11 +242,11 @@ in to Plex's online service to use the credential-free local path.
 
 ### WireGuard access
 
-The fresh WireGuard trial admits `10.60.60.0/24` alongside LAN and OpenVPN.
+WireGuard clients in `10.60.60.0/24` are admitted alongside the home LAN.
 It grants the same password-free Plex access, including server settings.
 The Route remains the source-address boundary; Plex still trusts only the
 existing router address, and client source addresses must be preserved to ingress.
-The offline-access setup script requires all three approved CIDRs.
+The offline-access setup script requires exactly the two approved CIDRs.
 WireGuard clients use the existing HTTPS hostname and DNS at `10.45.45.1`.
 
 Deployment validation is recorded separately; admitting this subnet does not

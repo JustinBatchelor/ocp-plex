@@ -38,7 +38,7 @@ the registry image is cached or pullable on eligible nodes for offline recovery.
 
 The checked-in offline mode trusts the router's observed source address inside
 Plex. Its Route allowlist is therefore an authentication boundary: admitted LAN
-(`10.45.45.0/24`), OpenVPN (`192.168.40.0/24`), and WireGuard
+(`10.45.45.0/24`) and WireGuard
 (`10.60.60.0/24`) clients have password-free access,
 including server settings. Keep that allowlist
 in place while the exception is enabled. Changing allowed CIDRs, router placement,

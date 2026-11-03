@@ -9,8 +9,8 @@ case "$mode" in
 esac
 if [ "$mode" = enable ]; then
   allowed=$(oc -n plex get route plex -o go-template='{{index .metadata.annotations "haproxy.router.openshift.io/ip_allowlist"}}')
-  [ "$allowed" = '10.45.45.0/24 192.168.40.0/24 10.60.60.0/24' ] || {
-    printf 'Refusing to enable offline access: Route must allow only 10.45.45.0/24 192.168.40.0/24 10.60.60.0/24.\n' >&2
+  [ "$allowed" = '10.45.45.0/24 10.60.60.0/24' ] || {
+    printf 'Refusing to enable offline access: Route must allow only 10.45.45.0/24 10.60.60.0/24.\n' >&2
     exit 1
   }
 fi
